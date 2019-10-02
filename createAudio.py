@@ -6,6 +6,8 @@ Note: ssml must be well-formed according to:
 from google.cloud import texttospeech
 import xlrd 
 from pydub import AudioSegment
+import io
+from pydub.playback import play
 
 # sound1 = AudioSegment.from_wav("/path/to/file1.wav")
 # sound2 = AudioSegment.from_wav("/path/to/file2.wav")
@@ -66,7 +68,7 @@ def convertTTS(engtext, filename):
 
     # Select the type of audio file you want returned
     audio_config = texttospeech.types.AudioConfig(
-        audio_encoding=texttospeech.enums.AudioEncoding.MP3,
+        audio_encoding=texttospeech.enums.AudioEncoding.LINEAR16, # this gets a WAV file
         effects_profile_id=["large-home-entertainment-class-device"],)
 
     # Perform the text-to-speech request on the text input with the selected
@@ -74,12 +76,12 @@ def convertTTS(engtext, filename):
     response = client.synthesize_speech(synthesis_input, voice, audio_config)
 
     # The response's audio_content is binary.
-    with open(filename, 'wb') as out:
-        # Write the response to the output file.
-        out.write(response.audio_content)
-        print('Audio content written to file: '+filename)
+    # with open(filename, 'wb') as out:
+    #     # Write the response to the output file.
+    #     out.write(response.audio_content)
+    #     print('Audio content written to file: '+filename)
+    return response.audio_content
 
-#convertTTS("Welcome to this tutorial video which teaches you how to design a PCB using Easy E D A.", 'brownfox.mp3')
 
 def readFile(myFile):
     f = open(myFile, "r")
@@ -95,13 +97,39 @@ def readFile(myFile):
 
 def readXLS(myfile):      
     wb = xlrd.open_workbook(myfile) 
-    sheet = wb.sheet_by_index(0) 
-    #sheet.cell_value(0, 0) 
+    sheet = wb.sheet_by_index(0)
+    lastTiming=0
+    lastDuration=0 
+    #sheet.cell_value(0, 0)
+    combined_sounds = AudioSegment.silent(duration=1)
     rowcount=sheet.nrows
-    for row in range (1, rowcount):
+    for row in range (1, 3):
         timeslot=sheet.cell_value(row, 0)  
         sentence=sheet.cell_value(row, 1)
-        filename="Row_"+str(row)+ "_"+str(timeslot)+".mp3"
-        convertTTS(sentence,filename)
+        
+        #blankWAV=AudioSegment.silent(duration=emptyduration*1000)
+        filename="Row_"+str(row)+ "_"+str(timeslot)+".wav"
+        audioStream=convertTTS(sentence,filename)
 
+       # audiobinaryIO=io.BytesIO(audioStream)
+
+        # Advanced usage, if you have raw audio data:
+        current_audio = AudioSegment(data=audioStream,
+                            sample_width=2,
+                            frame_rate=24000,
+                            channels=1)
+        #play(sound)
+        currentDuration=current_audio.duration_seconds
+        
+        #The duration of the empty slot is equal to time difference between
+        #the current start time, and the time the audio the sentence took.
+
+        emptyduration=timeslot-(lastTiming+lastDuration)
+        blankWAV=AudioSegment.silent(duration=emptyduration*1000,
+                                    frame_rate=24000,
+                                    )
+        combined_sounds=combined_sounds+blankWAV+current_audio
+        lastTiming=timeslot
+        lastDuration=currentDuration # dummy, but this has to be initialised by the duration of the current stream
+    combined_sounds.export("combined audio.wav", format="wav")
 readXLS('Audio Sequence.xlsx')

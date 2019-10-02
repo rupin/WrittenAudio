@@ -1,0 +1,8 @@
+Welcome to this tutorial video which teaches you how to design a PCB using Easy E D A.
+Easy E D A is a free to use, and you can create PCBs on this software for your projects. There is no need to install anything, it runs in a modern browser.
+I already have an account, so that is what I am using. You can pause the video here, go ahead and create an account, and come back here to continue.
+When you are logged in, you can access the PCB editor by clicking here. 
+You can access your past projects here in the project explorer.
+Let us go ahead and create a new project.
+I want to create a PCB for an E S P zero one module, which will send me a notification when two pins on the E S P zero one are connected together. Let us see how to do that.  
+You can name the project whatever you like, and then give it a description so you know what the project is.

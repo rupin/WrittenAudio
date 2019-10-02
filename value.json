@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "swift-terminal-246013",
+  "private_key_id": "45ce5326236f3ef314ee990dfe78a02f280ca281",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCfKht+7aWkg3le\nTyNDilW6EH7A9ezPB9X6+bBibycEeZqizbe1m6AzJNcbJGRSjjbTJTFy6qznANk6\n/Z6URYrOiiWOCFoq40eQ46tG0f55u6CjjwTfvTQoju9yq8uPIMpkhmbyAGEzcfmS\nPd0f/SaTENdg4weVH2CKQTP6WcjcQ1DF1EYy8DHTOLPKDYG8f0QvtA2dM9bVmnNI\njefNk9YSDMjwn9KL+jwdd719znHAJHcqSa/f5GNAR3MVuhMgN/P9ymqzoG/k9Nl3\nVvI300uPlMLvn276r/kAoJJdujobRCzv6e5Gg8NWnxtpC4PySlIhaDgy5W+Cb++j\nuHmHNRslAgMBAAECggEADJkNXJZMSFF0s4uBf8jNAMFp+vVsJTXaULdfJ+di1/aV\nEAJG4mu7OhkWIoqWmzcw7TTyLUWYYl9dkk79NICtnCvwjYWpN2BOa5AtoBkicnmw\nnQmGqfvkizpHBxVEcyN2CY9eyhRQHT2N8q6NWEkV+sl4Nq25jarSXhcLmWruXEqi\no+pMOBqToBMF453p/fToBgtHvmg3k6fE+hbONbHdtiRFEadKR/Zr0NyXMO1L82Dj\ncndYs7SymbENB37YyLHKOmM96f355zNoDXdJNRdC3AZjVqT57KyejX/vAJ9GFlQd\np62vqnIsS2P0M2CtVXYT9PvpR6OW1h8Og1SpJU652QKBgQDbHkhXNnV77KsJlL7K\nnvEDzaXwR3/aH7LtwJAsm0YmRdtHG9Daebuu8ik+KiuM85QDiy/ZM4HFUrQ+D6yS\nqYx6A+IOhUMTIbk/q5vCg29jmqwkFA3KF7MpigyKaLt3UyV5w+KncPR92UShk466\n4DcDVhxICUX76uIcRgPhzmudyQKBgQC59HCS3RoIDTBBkC+nwtb8Ef3WxvR6dxZQ\nGkGAS4402YHHnlTAqVMnhw5jBcjTnbNKTxMq84ff7d0ZutWcBkR7rrJw0sLJEZaR\neVir8QU9TwzAth68xyBVHUCQlavA0J+CQx7cuKwRlK8+1HHbHTu39a8Y9jFDN4VO\nS2ZSaKiQfQKBgQCMOTDqPvuoNqiuFPaUDGsImA5dWiRDno2PAPBC24tk6seNFgvu\nBIFLT8V89tev+CD8s5IHWaLueCLIpJc3tDEl1F5SFI38LFS0nkmrjRk3kMAgxoSc\nk9Yf+yxTVvrBPgB5kBX4OZz8/JGjJR7uEJakF/M5VlXnBUV1+oh5dPQBoQKBgBGk\nmZG1nKSq66sszPizycX8xwK7ubJs3hcXhqNvh7yH7oJMCWqGJjeX3suSXu2FBt/E\nBOOMW5XpcZLhYSb+iTza5F9D/+sn2gtPYhReN8sLVwBpxxzOH8kzj06ohLU0lg27\n5I+4jcrVOpNRgMPzUBkyHDzYDvB7shAtozWqbGPZAoGBANFvfeQTTmhx0dRITdFl\nZdDWhfAWftQ8WfKRzUUic7gdeXy1YN1JmJuWY8Zpg7axo0rSO4rlZWyMSp1wTr9E\nuXGCdCt3vzJ5wYbH6SegUuaQrYX8SPefq1zDNKfalojSUzsC0rZn2hvfO3ntbBSZ\nMaXvBBhQzEVf2SO8rYt45J3j\n-----END PRIVATE KEY-----\n",
+  "client_email": "svcaccount@swift-terminal-246013.iam.gserviceaccount.com",
+  "client_id": "100342699631117323213",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/svcaccount%40swift-terminal-246013.iam.gserviceaccount.com"
+}

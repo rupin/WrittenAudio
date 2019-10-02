@@ -5,6 +5,46 @@ Note: ssml must be well-formed according to:
 """
 from google.cloud import texttospeech
 import xlrd 
+from pydub import AudioSegment
+
+# sound1 = AudioSegment.from_wav("/path/to/file1.wav")
+# sound2 = AudioSegment.from_wav("/path/to/file2.wav")
+
+# combined_sounds = sound1 + sound2
+# combined_sounds.export("/output/path.wav", format="wav")
+
+# audio_in_file = "in_sine.wav"
+# audio_out_file = "out_sine.wav"
+
+# # create 1 sec of silence audio segment
+# one_sec_segment = AudioSegment.silent(duration=1000)  #duration in milliseconds
+
+# #read wav file to an audio segment
+# song = AudioSegment.from_wav(audio_in_file)
+
+# #Add above two audio segments    
+# final_song = one_sec_segment + song
+
+# #Either save modified audio
+# final_song.export(audio_out_file, format="wav")
+
+# #Or Play modified audio
+# play(final_song)
+
+# # Advanced usage, if you have raw audio data:
+# sound = AudioSegment(
+#     # raw audio data (bytes)
+#     data=b'…',
+
+#     # 2 byte (16 bit) samples
+#     sample_width=2,
+
+#     # 44.1 kHz frame rate
+#     frame_rate=44100,
+
+#     # stereo
+#     channels=2
+# )
 
 def convertTTS(engtext, filename):
     print(engtext)

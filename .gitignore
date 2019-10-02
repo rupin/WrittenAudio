@@ -1,1 +1,7 @@
 *.json
+venv
+*.pyc
+staticfiles
+.env
+*.sqlite3
+credentials

@@ -21,8 +21,8 @@ def convertTTS(engtext, filename):
     # voice gender ("neutral")
     voice = texttospeech.types.VoiceSelectionParams(
         language_code='en-US',
-        ssml_gender=texttospeech.enums.SsmlVoiceGender.NEUTRAL,
-        name= "en-US-Wavenet-D")
+        ssml_gender=texttospeech.enums.SsmlVoiceGender.FEMALE,
+        name= "en-US-Wavenet-A")
 
     # Select the type of audio file you want returned
     audio_config = texttospeech.types.AudioConfig(
@@ -61,7 +61,7 @@ def readXLS(myfile):
     for row in range (1, rowcount):
         timeslot=sheet.cell_value(row, 0)  
         sentence=sheet.cell_value(row, 1)
-        filename="Row_"+str(row)+ "_"+str(timeslot)
+        filename="Row_"+str(row)+ "_"+str(timeslot)+".mp3"
         convertTTS(sentence,filename)
 
 readXLS('Audio Sequence.xlsx')

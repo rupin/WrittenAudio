@@ -48,7 +48,7 @@ from pydub.playback import play
 #     channels=2
 # )
 
-def convertTTS(engtext, filename):
+def convertTTS(engtext):
     print(engtext)
 
     #return
@@ -75,25 +75,29 @@ def convertTTS(engtext, filename):
     # voice parameters and audio file type
     response = client.synthesize_speech(synthesis_input, voice, audio_config)
 
-    # The response's audio_content is binary.
-    # with open(filename, 'wb') as out:
-    #     # Write the response to the output file.
-    #     out.write(response.audio_content)
-    #     print('Audio content written to file: '+filename)
+  
     return response.audio_content
 
 
-def readFile(myFile):
-    f = open(myFile, "r")
-    p=0
+def createAudioFile(row, timeslot, sentence):
+    filename="Row_"+str(row)+ "_"+str(timeslot)+".wav"
+    audioStream=convertTTS(sentence)
+    #The response's audio_content is binary.
+    with open(filename, 'wb') as out:
+        # Write the response to the output file.
+        out.write(audioStream)
+        print('Audio content written to file: '+filename)
+ 
+def testBlank():
+    blankWAV1=AudioSegment.silent(duration=2*1000,
+                                    frame_rate=24000,
+                                    ) 
+    blankWAV2=AudioSegment.silent(duration=2*1000,
+                                    frame_rate=24000,
+                                    ) 
+    play(blankWAV1+blankWAV2)   
 
-    for x in f:
-        filenameToSave=str(p)+".mp3"
-        convertTTS(x,filenameToSave)
-        p=p+1 
 
-
-#readFile('textsentences.txt')
 
 def readXLS(myfile):      
     wb = xlrd.open_workbook(myfile) 
@@ -103,15 +107,15 @@ def readXLS(myfile):
     #sheet.cell_value(0, 0)
     combined_sounds = AudioSegment.silent(duration=1)
     rowcount=sheet.nrows
-    for row in range (1, 3):
+    for row in range (1, 2):
         timeslot=sheet.cell_value(row, 0)  
         sentence=sheet.cell_value(row, 1)
         
-        #blankWAV=AudioSegment.silent(duration=emptyduration*1000)
-        filename="Row_"+str(row)+ "_"+str(timeslot)+".wav"
-        audioStream=convertTTS(sentence,filename)
+    
+        
+        audioStream=convertTTS(sentence)
 
-       # audiobinaryIO=io.BytesIO(audioStream)
+       
 
         # Advanced usage, if you have raw audio data:
         current_audio = AudioSegment(data=audioStream,
@@ -125,11 +129,16 @@ def readXLS(myfile):
         #the current start time, and the time the audio the sentence took.
 
         emptyduration=timeslot-(lastTiming+lastDuration)
+        emptyduration=round(emptyduration,3)
         blankWAV=AudioSegment.silent(duration=emptyduration*1000,
                                     frame_rate=24000,
                                     )
+        #play(blankWAV)
         combined_sounds=combined_sounds+blankWAV+current_audio
         lastTiming=timeslot
         lastDuration=currentDuration # dummy, but this has to be initialised by the duration of the current stream
-    combined_sounds.export("combined audio.wav", format="wav")
+    play(combined_sounds)
+    #combined_sounds.export("combined audio.wav", format="wav")
+
 readXLS('Audio Sequence.xlsx')
+#testBlank()

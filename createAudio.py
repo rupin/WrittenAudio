@@ -64,7 +64,7 @@ def testBlank():
 
 
 
-def generateAllAudio(myfile):      
+def generateAudio(myfile,pending_row=-1):      
     wb = xlrd.open_workbook(myfile) 
     sheet = wb.sheet_by_index(0)
     lastTiming=0
@@ -72,11 +72,21 @@ def generateAllAudio(myfile):
     #sheet.cell_value(0, 0)
     combined_sounds = AudioSegment.silent(duration=1)
     rowcount=sheet.nrows
-    for row in range (1, 2):
-        timeslot=sheet.cell_value(row, 0)  
-        sentence=sheet.cell_value(row, 1) 
-        createAudioFile(row,timeslot, sentence)      
-        #audioStream=convertTTS(sentence)
+    if(pending_row>0):
+        if(pending_row<=rowcount):
+            timeslot=sheet.cell_value(pending_row, 0)  
+            sentence=sheet.cell_value(pending_row, 1) 
+            createAudioFile(pending_row,timeslot, sentence)
+        else:
+            print("Row number "+str(pending_row)+" does not exist in the input file")
+            sys.exit(2)  
+    else:
+
+        for row in range (1, 2):
+            timeslot=sheet.cell_value(row, 0)  
+            sentence=sheet.cell_value(row, 1) 
+            createAudioFile(row,timeslot, sentence)      
+            #audioStream=convertTTS(sentence)
 
        
 
@@ -159,12 +169,13 @@ def main(argv):
     #print ('Input file is "', inputfile)
     #print ('Output file is "', outputfile)
     if(operationType=="GENERATE_AUDIO"):
-        generateAllAudio(inputfile)
+        generateAudio(inputfile)
 
     elif(operationType=="COMBINE_AUDIO"):
         pass
     elif(operationType=='GENERATE_AUDIO_FOR_ROW'):
-        pass
+        generateAudio(inputfile,rownum)
+        #pass
 
 if __name__ == "__main__":
    main(sys.argv[1:])

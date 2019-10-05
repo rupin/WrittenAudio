@@ -8,7 +8,7 @@ import xlrd
 from pydub import AudioSegment
 import io
 from pydub.playback import play
-import sys, getopt
+import sys, getopt, os
 
 
 def convertTTS(engtext):
@@ -41,9 +41,11 @@ def convertTTS(engtext):
   
     return response.audio_content
 
+def createFileName(row, timeslot):
+    return "Row_"+str(row)+ "_"+str(timeslot)+".wav"
 
 def createAudioFile(row, timeslot, sentence):
-    filename="Row_"+str(row)+ "_"+str(timeslot)+".wav"
+    filename=createFileName(row, timeslot)
     audioStream=convertTTS(sentence)
     #The response's audio_content is binary.
     with open(filename, 'wb') as out:
@@ -82,7 +84,7 @@ def generateAudio(myfile,pending_row=-1):
             sys.exit(2)  
     else:
 
-        for row in range (1, 2):
+        for row in range (1, 5):
             timeslot=sheet.cell_value(row, 0)  
             sentence=sheet.cell_value(row, 1) 
             createAudioFile(row,timeslot, sentence)      
@@ -96,27 +98,55 @@ def generateAudio(myfile,pending_row=-1):
 
 def combineFiles(inputxlsfilename, outputFileName):
 
-    # Advanced usage, if you have raw audio data:
-    current_audio = AudioSegment(data=audioStream,
-                    sample_width=2,
-                    frame_rate=24000,
-                    channels=1)
-    #play(sound)
-    currentDuration=current_audio.duration_seconds
+        wb = xlrd.open_workbook(inputxlsfilename) 
+        sheet = wb.sheet_by_index(0)
+        lastTiming=0
+        lastDuration=0 
+        #sheet.cell_value(0, 0)
+        combined_sounds = AudioSegment.silent(duration=1)
+        rowcount=sheet.nrows          
 
-    #The duration of the empty slot is equal to time difference between
-    #the current start time, and the time the audio the sentence took.
+        for row in range (1, 5):
+            timeslot=sheet.cell_value(row, 0)  
+            sentence=sheet.cell_value(row, 1) 
+            filename=createFileName(row, timeslot)
+            fileExists=os.path.exists(filename)
+            if(not fileExists):
+                createAudioFile(row,timeslot, sentence)
+              
+            current_audio=AudioSegment.from_wav(filename)   
 
-    emptyduration=timeslot-(lastTiming+lastDuration)
-    emptyduration=round(emptyduration,3)
-    blankWAV=AudioSegment.silent(duration=emptyduration*1000,
-                            frame_rate=24000,
-                            )
-    #play(blankWAV)
-    combined_sounds=combined_sounds+blankWAV+current_audio
-    lastTiming=timeslot
-    lastDuration=currentDuration # dummy, but this has to be initialised by the duration of the current stream
-    #play(combined_sounds)
+            # # Advanced usage, if you have raw audio data:
+            # current_audio = AudioSegment(data=audioStream,
+            #         sample_width=2,
+            #         frame_rate=24000,
+            #         channels=1)
+            #play(sound)
+            currentDuration=current_audio.duration_seconds
+
+            #The duration of the empty slot is equal to time difference between
+            #the current start time, and the time the audio the sentence took.
+
+            emptyduration=timeslot-(lastTiming+lastDuration)
+            emptyduration=round(emptyduration,3)
+            if(emptyduration<0):
+                print('Audio in row '+str(row-1)+' exceeds time beyond the start time of row '+str(row))
+                
+                userChoice=input('Press C/c to continue, X/x to stop processing: ')
+                if(userChoice.lower()=='c'):
+                    pass
+                else: 
+                    print('Processing Halted')   
+                    sys.exit(2)
+            blankWAV=AudioSegment.silent(duration=emptyduration*1000,frame_rate=24000)
+            
+            combined_sounds=combined_sounds+blankWAV+current_audio
+            lastTiming=timeslot
+            lastDuration=currentDuration # dummy, but this has to be initialised by the duration of the current stream
+        
+
+        combined_sounds.export(outputFileName, format="wav")
+        print(outputFileName+' Saved')
 
 
 #readXLS('Audio Sequence.xlsx')
@@ -172,7 +202,7 @@ def main(argv):
         generateAudio(inputfile)
 
     elif(operationType=="COMBINE_AUDIO"):
-        pass
+        combineFiles(inputfile,outputfile)
     elif(operationType=='GENERATE_AUDIO_FOR_ROW'):
         generateAudio(inputfile,rownum)
         #pass

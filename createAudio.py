@@ -37,8 +37,6 @@ def convertTTS(engtext):
     # Perform the text-to-speech request on the text input with the selected
     # voice parameters and audio file type
     response = client.synthesize_speech(synthesis_input, voice, audio_config)
-
-  
     return response.audio_content
 
 def createFileName(row, timeslot):
@@ -84,7 +82,7 @@ def generateAudio(myfile,pending_row=-1):
             sys.exit(2)  
     else:
 
-        for row in range (1, 5):
+        for row in range (1, rowcount):
             timeslot=sheet.cell_value(row, 0)  
             sentence=sheet.cell_value(row, 1) 
             createAudioFile(row,timeslot, sentence)      
@@ -106,7 +104,7 @@ def combineFiles(inputxlsfilename, outputFileName):
         combined_sounds = AudioSegment.silent(duration=1)
         rowcount=sheet.nrows          
 
-        for row in range (1, 5):
+        for row in range (1, rowcount):
             timeslot=sheet.cell_value(row, 0)  
             sentence=sheet.cell_value(row, 1) 
             filename=createFileName(row, timeslot)
@@ -170,7 +168,7 @@ def printHelpMessage():
 def main(argv):
     inputfile = ''
     outputfile = ''
-    specificRowToBeProcessed=False
+    
     rownum=0
     operationType='GENERATE_AUDIO'
     try:
@@ -187,7 +185,7 @@ def main(argv):
         elif opt=="-o":
             outputfile = arg
         elif opt =='-r':
-            specificRowToBeProcessed=True
+            
             operationType='GENERATE_AUDIO_FOR_ROW'
             rownum=int(arg)
         elif opt=='-c':
@@ -200,7 +198,6 @@ def main(argv):
     #print ('Output file is "', outputfile)
     if(operationType=="GENERATE_AUDIO"):
         generateAudio(inputfile)
-
     elif(operationType=="COMBINE_AUDIO"):
         combineFiles(inputfile,outputfile)
     elif(operationType=='GENERATE_AUDIO_FOR_ROW'):

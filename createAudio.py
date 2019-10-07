@@ -9,7 +9,7 @@ from pydub import AudioSegment
 import io
 from pydub.playback import play
 import sys, getopt, os
-
+from math import ceil
 
 def convertTTS(engtext):
     print(engtext)
@@ -170,11 +170,49 @@ def combineFiles(inputxlsfilename, outputFileName):
 
 
 #readXLS('Audio Sequence.xlsx')
-def overlayMusic(audiofile, musicFile, audiomarks):
-    print(audiofile)
-    print(musicFile)
-    print(audiomarks)
+def overlayMusic(audioFile, musicFile, audioMarks):
+    #print(audiofile)
+    #print(musicFile)
+    #print(audiomarks)
+    transition=1000
+    audioFileRef=AudioSegment.from_wav(audioFile)
+    musicFileRef=AudioSegment.from_wav(musicFile)
+    audioFileDuration=audioFileRef.duration_seconds
+    musicfileDuration=musicFileRef.duration_seconds
+    print(musicfileDuration)
+    print(audioFileDuration)
+    if(audioFileDuration>musicfileDuration):
+        factor=ciel(audioFileDuration/musicfileDuration)
+        musicFileRef=musicFileRef*factor #duplicate the music file
+    musicFileRef=musicFileRef[0:audioFileDuration*1000] # trim any excess
+    musicfileDuration=musicFileRef.duration_seconds
+    #print(musicfileDuration)
+    modifiedMusicRef=None
+    for audioMark in audioMarks:
+        marktype=audioMark['type']
+        markStart=audioMark['start']
+        markEnd=audioMark['end']
+       # initialSegment=musicFileRef[markStart:markStart+transition]
+       # middleSegment=musicFileRef[markStart+transition:markEnd-transition]
+       # finalSegment=musicFileRef[markEnd-transition:markEnd]
+        segment=musicFileRef[markStart:markEnd]
+        if(marktype=='S'):#needs the total duration greater than 2000
+            #initialSegment=initialSegment*
+            pass
+            
+        elif(marktype=='A'):
+            segment=segment-20
+             
+        if(modifiedMusicRef is None):
+            modifiedMusicRef=segment
+        else:
+            modifiedMusicRef=modifiedMusicRef+segment
 
+        #print(marktype)
+        #print(markStart)
+        #print(markEnd)
+    newcombinedMusic=audioFileRef.overlay(modifiedMusicRef) 
+    play(newcombinedMusic)
 
 def printHelpMessage():
     print('Help Information and Parameters')

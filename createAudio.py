@@ -100,9 +100,12 @@ def combineFiles(inputxlsfilename, outputFileName):
         sheet = wb.sheet_by_index(0)
         lastTiming=0
         lastDuration=0 
+        operations=[]
         #sheet.cell_value(0, 0)
         combined_sounds = AudioSegment.silent(duration=1)
-        rowcount=sheet.nrows          
+        rowcount=sheet.nrows
+        silentDurationStarttime=0
+        
 
         for row in range (1, rowcount):
             timeslot=sheet.cell_value(row, 0)  
@@ -111,7 +114,7 @@ def combineFiles(inputxlsfilename, outputFileName):
             fileExists=os.path.exists(filename)
             if(not fileExists):
                 createAudioFile(row,timeslot, sentence)
-              
+            print(filename) 
             current_audio=AudioSegment.from_wav(filename)   
 
             # # Advanced usage, if you have raw audio data:
@@ -124,8 +127,9 @@ def combineFiles(inputxlsfilename, outputFileName):
 
             #The duration of the empty slot is equal to time difference between
             #the current start time, and the time the audio the sentence took.
-
+            #print(currentDuration)
             emptyduration=timeslot-(lastTiming+lastDuration)
+            #print(timeslot)
             emptyduration=round(emptyduration,3)
             if(emptyduration<0):
                 print('Audio in row '+str(row-1)+' exceeds time beyond the start time of row '+str(row))
@@ -138,16 +142,38 @@ def combineFiles(inputxlsfilename, outputFileName):
                     sys.exit(2)
             blankWAV=AudioSegment.silent(duration=emptyduration*1000,frame_rate=24000)
             
+            silentduration={}
+            silentduration['type']='S'
+            silentduration['start']=silentDurationStarttime
+            silentduration['end']=round(silentDurationStarttime+(emptyduration*1000),3)
+            operations.append(silentduration)
+
+            audioduration={}
+            audioduration['type']='A'
+            audioduration['start']=silentduration['end']
+            audioduration['end']=silentDurationStarttime=round(silentduration['end']+(currentDuration*1000),3)
+            operations.append(audioduration)
+
+            
+           
+
             combined_sounds=combined_sounds+blankWAV+current_audio
             lastTiming=timeslot
             lastDuration=currentDuration # dummy, but this has to be initialised by the duration of the current stream
-        
+            #silenDurationStarttime=audioduration['end']
 
         combined_sounds.export(outputFileName, format="wav")
         print(outputFileName+' Saved')
+        #print(operations)
+        return operations
+
 
 
 #readXLS('Audio Sequence.xlsx')
+def overlayMusic(audiofile, musicFile, audiomarks):
+    print(audiofile)
+    print(musicFile)
+    print(audiomarks)
 
 
 def printHelpMessage():
@@ -163,16 +189,20 @@ def printHelpMessage():
     print(" 3: Combine Audio from existing audio files")
     print(' createAudio.py -x <input xls file> -c -o <outputfile>')
     print(" Example: createAudio.py -x 'abc.xls' -c -o 'myaudiofile.wav'")
+    print(" 4: Combine Audio from existing audio files with Music Overlay")
+    print(' createAudio.py -x <input xls file> -v <overlayfile> -o <outputfile>')
+    print(" Example: createAudio.py -x 'abc.xls' -v music.wav -o 'myaudiofile.wav'")
 
 
 def main(argv):
     inputfile = ''
     outputfile = ''
+    overlayfile=''
     
     rownum=0
     operationType='GENERATE_AUDIO'
     try:
-        opts, args = getopt.getopt(argv,"hx:r:o:c")
+        opts, args = getopt.getopt(argv,"hx:r:o:cv:")
     except getopt.GetoptError:
         printHelpMessage()
         sys.exit(2)
@@ -184,12 +214,14 @@ def main(argv):
             inputfile = arg
         elif opt=="-o":
             outputfile = arg
-        elif opt =='-r':
-            
+        elif opt =='-r':            
             operationType='GENERATE_AUDIO_FOR_ROW'
             rownum=int(arg)
         elif opt=='-c':
             operationType='COMBINE_AUDIO'
+        elif opt=='-v':
+            operationType='COMBINE_AUDIO_WITH_OVERLAY'
+            overlayfile=arg
 
 
 
@@ -198,6 +230,9 @@ def main(argv):
     #print ('Output file is "', outputfile)
     if(operationType=="GENERATE_AUDIO"):
         generateAudio(inputfile)
+    elif(operationType=="COMBINE_AUDIO_WITH_OVERLAY"):
+        combined_audio_operations=combineFiles(inputfile,outputfile)
+        overlayMusic(outputfile, overlayfile, combined_audio_operations)
     elif(operationType=="COMBINE_AUDIO"):
         combineFiles(inputfile,outputfile)
     elif(operationType=='GENERATE_AUDIO_FOR_ROW'):

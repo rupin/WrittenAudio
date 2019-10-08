@@ -1,7 +1,19 @@
 # WrittenAudio
-Written Audio Uses Google Text to Speech engine and a configuration file to create Audio files for videos
+Written Audio Uses Google Text to Speech engine and a configuration file to create Audio files for videos.
+### Features
+* Uses a .xlsx file with time markers and text to generate Audio
+* Combines individual audio files in sequence. Add gaps between Audio files as silence. 
+* Add gradual transitions of music in silent gaps, creating ambient background music in the Audio file. 
+* Uses Google Cloud Text to Speech to generate audio, so audio is clean from ruffles and noise. 
+
+### Planned Features
+* Potential to convert English text to other languages, and generate audio files for other languages.
+* Integrate AWS Polly (More feature rich and better sounding)
+* Morph into a Web Front End
 
 
+
+# Usage
 usage: createAudio.py [-h] -x X [-r R] [-o O] [-m M] [-v V]
 
 optional arguments:

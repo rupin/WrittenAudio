@@ -83,7 +83,7 @@ Use the Audio Sequence.xlsx file to generate audio files (it skips files which a
 1) When you add text in your .xlsx file, it is possible that the audio generated for it can overlap with the audio for the second row. For example, one of your rows contains text "Paris is the Capital of France, and is the most populous city in France" at 30 seconds. After conversion to audio, this line of text is 10 seconds long. So the audio will start playing the above line at 30 seconds, and continue to play till 40 seconds.
 If the next row contains 'The language most Parisians speak is French' and if it starts at 38 seconds, the user gets an error to abruptly stop the conversion or continue. 
 
-2) Files use din the options not present at the right locations. 
+2) Files used in the options not present at the right locations. 
 
 3) Google API for Cloud to Speech is not enabled or has not been associated with the session. 
 

@@ -11,43 +11,20 @@ from pydub.playback import play
 import sys, getopt, os
 from math import ceil
 from pathlib import Path
+from onlineservices.TTS import TTS
+import argparse
 
 #print()
 
-def convertTTS(engtext):
-    print(engtext)
 
-    #return
-
-    # Instantiates a client
-    client = texttospeech.TextToSpeechClient()
-
-    # Set the text input to be synthesized
-    synthesis_input = texttospeech.types.SynthesisInput(text=engtext)
-
-    # Build the voice request, select the language code ("en-US") and the ssml
-    # voice gender ("neutral")
-    voice = texttospeech.types.VoiceSelectionParams(
-        language_code='en-US',
-        ssml_gender=texttospeech.enums.SsmlVoiceGender.FEMALE,
-        name= "en-US-Wavenet-A")
-
-    # Select the type of audio file you want returned
-    audio_config = texttospeech.types.AudioConfig(
-        audio_encoding=texttospeech.enums.AudioEncoding.LINEAR16, # this gets a WAV file
-        effects_profile_id=["large-home-entertainment-class-device"],)
-
-    # Perform the text-to-speech request on the text input with the selected
-    # voice parameters and audio file type
-    response = client.synthesize_speech(synthesis_input, voice, audio_config)
-    return response.audio_content
 
 def createFileName(row, timeslot):
     return "Row_"+str(row)+ "_"+str(timeslot)+".wav"
 
 def createAudioFile(row, timeslot, sentence):
     filename=createFileName(row, timeslot)
-    audioStream=convertTTS(sentence)
+    newTTSObject=TTS(TTS.SERVICE_PROVIDER_GOOGLE)
+    audioStream=newTTSObject.convertTTSGoogle(sentence)
     #The response's audio_content is binary.
     with open(filename, 'wb') as out:
         # Write the response to the output file.
@@ -56,14 +33,7 @@ def createAudioFile(row, timeslot, sentence):
 
 
  
-def testBlank():
-    blankWAV1=AudioSegment.silent(duration=2*1000,
-                                    frame_rate=24000,
-                                    ) 
-    blankWAV2=AudioSegment.silent(duration=2*1000,
-                                    frame_rate=24000,
-                                    ) 
-    play(blankWAV1+blankWAV2)   
+
 
 
 
@@ -89,7 +59,7 @@ def generateAudio(myfile,pending_row=-1):
             timeslot=sheet.cell_value(row, 0)  
             sentence=sheet.cell_value(row, 1) 
             createAudioFile(row,timeslot, sentence)      
-            #audioStream=convertTTS(sentence)
+            #audioStream=TTS.convertTTSGoogle(sentence)
 
        
 
@@ -217,85 +187,60 @@ def overlayMusic(audioFile, musicFile, audioMarks, musicscaling=-10):
         else:
             modifiedMusicRef=modifiedMusicRef+segment
 
-        #print(marktype)
-        #print(markStart)
-        #print(markEnd)
+        
     silent_file_name=Path(audioFile).resolve().stem
     outputFileName=silent_file_name+"_"+musicFile    
     newcombinedMusic=audioFileRef.overlay(modifiedMusicRef) 
     newcombinedMusic.export(outputFileName, format="wav")
     print(outputFileName+' Saved')
-    play(newcombinedMusic)
-
-def printHelpMessage():
-    print('Help Information and Parameters')
-    print(" 1: Create Individual Audio files from a .xls source")
-    print(' createAudio.py -x <input xls files>')
-    print(" Example: createAudio.py -x 'abc.xls'")
-    print()
-    print(" 2: Regenerate audio for a specific row")
-    print(' createAudio.py -x <input xls files> -r <row number>')
-    print(" Example: createAudio.py -x 'abc.xls' -r 3")
-    print()
-    print(" 3: Combine Audio from existing audio files")
-    print(' createAudio.py -x <input xls file> -c -o <outputfile>')
-    print(" Example: createAudio.py -x 'abc.xls' -c -o 'myaudiofile.wav'")
-    print()
-    print(" 4: Combine Audio from existing audio files with Music Overlay")
-    print(' createAudio.py -x <input xls file> -v <overlayfile> -o <outputfile>')
-    print(" Example: createAudio.py -x 'abc.xls' -v music.wav -o 'myaudiofile.wav'")
-    print()
-    print(" 5: Combine Audio from existing audio files with Music Overlay. Decrease Music Amplitude in combined Audio file. Example -m 10 reduces volume by 10dB ")
-    print(' createAudio.py -x <input xls file> -v <overlayfile> -o <outputfile> -m <dB reduction>')
-    print(" Example: createAudio.py -x 'abc.xls' -v music.wav -o 'myaudiofile.wav' -m 10")
+    #play(newcombinedMusic)
 
 
-def main(argv):
+
+def main():
     inputfile = ''
     outputfile = ''
     overlayfile=''
     musicscaling=-10
     rownum=0
     operationType='GENERATE_AUDIO'
-    try:
-        opts, args = getopt.getopt(argv,"hx:r:o:cv:m:")
-    except getopt.GetoptError:
-        printHelpMessage()
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            printHelpMessage()
-            sys.exit()      
-        if opt=="-x":
-            inputfile = arg
-        elif opt=="-o":
-            outputfile = arg
-        elif opt =='-r':            
-            operationType='GENERATE_AUDIO_FOR_ROW'
-            rownum=int(arg)
-        elif opt=='-c':
-            operationType='COMBINE_AUDIO'
-        elif opt=='-v':
-            operationType='COMBINE_AUDIO_WITH_OVERLAY'
-            overlayfile=arg
-        elif(opt=="-m"):
-            musicscaling=arg    
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-x", help="The Input .xlsx file", required=True)
+    parser.add_argument("-r",type=int, help="The Row inside the .xlsx which should be individually processed")
+    parser.add_argument("-o", help="The name of the Output File. Example output.wav")
+    parser.add_argument("-m", help="Combine Audio with Overlay Music File. Example music_pop.wav")
+    parser.add_argument("-v",type=int, help="Control the volume of the Music File. Negative values will reduce volume, positive values will increase it.")
+    #parser.add_argument("-f",type=int, help="Optional, Fade duration in milliseconds")
+    
+    args = parser.parse_args()
 
+    if(args.x):
+        inputfile = args.x
+        operationType='GENERATE_AUDIO'
+    if(args.r):
+        rownum = args.r
+        operationType='GENERATE_AUDIO_FOR_ROW'
+    if(args.o):
+        outputfile = args.o
+        operationType='GENERATE_AND_COMBINE_AUDIO'
+    if(args.m):
+        overlayfile = args.m
+        operationType='COMBINE_AUDIO_WITH_OVERLAY'
+    if(args.v):
+        musicscaling=args.v
+    
+    
 
-
-    #print ('Input file is "', inputfile)
-    #print ('Output file is "', outputfile)
     if(operationType=="GENERATE_AUDIO"):
         generateAudio(inputfile)
     elif(operationType=="COMBINE_AUDIO_WITH_OVERLAY"):
         combined_audio_operations=combineFiles(inputfile,outputfile)
-        overlayMusic(outputfile, overlayfile, combined_audio_operations)
-    elif(operationType=="COMBINE_AUDIO"):
+        overlayMusic(outputfile, overlayfile, combined_audio_operations,musicscaling)
+    elif(operationType=="GENERATE_AND_COMBINE_AUDIO"):
         combineFiles(inputfile,outputfile)
     elif(operationType=='GENERATE_AUDIO_FOR_ROW'):
         generateAudio(inputfile,rownum)
-        #pass
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+   main()

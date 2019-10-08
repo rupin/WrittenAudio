@@ -39,22 +39,28 @@ This command will install all required dependencies for your to run the program.
 
 Look at the included Audio Sequence.xlsx file to understand better.
 
-# How to Use
+### Create Google API credentials and enable the Cloud to Text API.Assign these credentials for the current user terminal session.
+<code> export GOOGLE_APPLICATION_CREDENTIALS="credentials/credentials.json" </code>
+
+
+
+# How to Use the Application
 
 ## Create Individual Audio files from .xlsx file
  
 <code>python3 createAudio.py -x 'Audio Sequence.xlsx'</code>
 
 ## Create Individual Audio file for a specific row.
-After Creating all files, you reviewed them. Edit a specific row
- 
-<code>python3 createAudio.py -x 'Audio Sequence.xlsx'</code>
+After Creating all files, you reviewed them, and you can change the text or time for a few rows. Edit a specific row in your .xlsx file (Time or Text or both can be changed). Change multiple rows and process them individually.   
+
+<code>python3 createAudio.py -x 'Audio Sequence.xlsx' -r 3</code>
 
 ## Combine Files with silent periods between audio utterances
  
 <code>python3 createAudio.py -x 'Audio Sequence.xlsx' -o 'output.wav'</code>
 
 Use the Audio Sequence.xlsx file to generate audio files (it skips files which are already generated), and combine those into one single output.wav file. 
+
 
 ## Combine Files with silent periods replaced with music
  
@@ -72,5 +78,16 @@ Use the Audio Sequence.xlsx file to generate audio files (it skips files which a
 * Adding a negative number will reduce volume, while adding a positive number increases it. The number is in dB. 
 * -v 4 increases the volume by 4 dB. 
 * -v -3 reduces the volume by 3dB
+  
+### Possible Errors
+1) When you add text in your .xlsx file, it is possible that the audio generated for it can overlap with the audio for the second row. For example, one of your rows contains text "Paris is the Capital of France, and is the most populous city in France" at 30 seconds. After conversion to audio, this line of text is 10 seconds long. So the audio will start playing the above line at 30 seconds, and continue to play till 40 seconds.
+If the next row contains 'The language most Parisians speak is French' and if it starts at 38 seconds, the user gets an error to abruptly stop the conversion or continue. 
+
+2) Files use din the options not present at the right locations. 
+
+3) Google API for Cloud to Speech is not enabled or has not been associated with the session. 
+
+4) Input is an .mp3 file, but the application works with .wav files only. 
+
 
  

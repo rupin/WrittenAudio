@@ -10,6 +10,9 @@ import io
 from pydub.playback import play
 import sys, getopt, os
 from math import ceil
+from pathlib import Path
+
+#print()
 
 def convertTTS(engtext):
     print(engtext)
@@ -102,7 +105,7 @@ def combineFiles(inputxlsfilename, outputFileName):
         lastDuration=0 
         operations=[]
         #sheet.cell_value(0, 0)
-        combined_sounds = AudioSegment.silent(duration=1)
+        combined_sounds = None
         rowcount=sheet.nrows
         silentDurationStarttime=0
         
@@ -114,7 +117,7 @@ def combineFiles(inputxlsfilename, outputFileName):
             fileExists=os.path.exists(filename)
             if(not fileExists):
                 createAudioFile(row,timeslot, sentence)
-            print(filename) 
+            #print(filename) 
             current_audio=AudioSegment.from_wav(filename)   
 
             # # Advanced usage, if you have raw audio data:
@@ -130,7 +133,7 @@ def combineFiles(inputxlsfilename, outputFileName):
             #print(currentDuration)
             emptyduration=timeslot-(lastTiming+lastDuration)
             #print(timeslot)
-            emptyduration=round(emptyduration,3)
+            emptyduration=round(emptyduration,3) * 1000
             if(emptyduration<0):
                 print('Audio in row '+str(row-1)+' exceeds time beyond the start time of row '+str(row))
                 
@@ -140,24 +143,29 @@ def combineFiles(inputxlsfilename, outputFileName):
                 else: 
                     print('Processing Halted')   
                     sys.exit(2)
-            blankWAV=AudioSegment.silent(duration=emptyduration*1000,frame_rate=24000)
-            
-            silentduration={}
-            silentduration['type']='S'
-            silentduration['start']=silentDurationStarttime
-            silentduration['end']=round(silentDurationStarttime+(emptyduration*1000),3)
-            operations.append(silentduration)
+            blankWAV=AudioSegment.silent(duration=emptyduration,frame_rate=24000)
+            silentDurationEndTime=silentDurationStarttime+emptyduration
+
+            if(emptyduration>3000):
+                silentduration={}
+                silentduration['type']='S'
+                silentduration['start']=silentDurationStarttime               
+                silentduration['end']=silentDurationEndTime
+                operations.append(silentduration)
 
             audioduration={}
             audioduration['type']='A'
-            audioduration['start']=silentduration['end']
-            audioduration['end']=silentDurationStarttime=round(silentduration['end']+(currentDuration*1000),3)
+            audioduration['start']=silentDurationEndTime
+            audioduration['end']=silentDurationStarttime=round(silentDurationEndTime+(currentDuration*1000),3)
             operations.append(audioduration)
 
             
            
+            if(combined_sounds is None):
 
-            combined_sounds=combined_sounds+blankWAV+current_audio
+                combined_sounds=blankWAV+current_audio
+            else:
+                combined_sounds=combined_sounds+blankWAV+current_audio
             lastTiming=timeslot
             lastDuration=currentDuration # dummy, but this has to be initialised by the duration of the current stream
             #silenDurationStarttime=audioduration['end']
@@ -170,7 +178,7 @@ def combineFiles(inputxlsfilename, outputFileName):
 
 
 #readXLS('Audio Sequence.xlsx')
-def overlayMusic(audioFile, musicFile, audioMarks):
+def overlayMusic(audioFile, musicFile, audioMarks, musicscaling=-10):
     #print(audiofile)
     #print(musicFile)
     #print(audiomarks)
@@ -179,12 +187,12 @@ def overlayMusic(audioFile, musicFile, audioMarks):
     musicFileRef=AudioSegment.from_wav(musicFile)
     audioFileDuration=audioFileRef.duration_seconds
     musicfileDuration=musicFileRef.duration_seconds
-    print(musicfileDuration)
-    print(audioFileDuration)
+    #print(musicfileDuration)
+    #print(audioFileDuration)
     if(audioFileDuration>musicfileDuration):
         factor=ciel(audioFileDuration/musicfileDuration)
         musicFileRef=musicFileRef*factor #duplicate the music file
-    musicFileRef=musicFileRef[0:audioFileDuration*1000] # trim any excess
+    musicFileRef=(musicFileRef[0:audioFileDuration*1000])+musicscaling # trim any excess
     musicfileDuration=musicFileRef.duration_seconds
     #print(musicfileDuration)
     modifiedMusicRef=None
@@ -198,7 +206,8 @@ def overlayMusic(audioFile, musicFile, audioMarks):
         segment=musicFileRef[markStart:markEnd]
         if(marktype=='S'):#needs the total duration greater than 2000
             #initialSegment=initialSegment*
-            pass
+            #pass
+            segment=segment.fade_in(1000).fade_out(1000)
             
         elif(marktype=='A'):
             segment=segment-20
@@ -211,7 +220,11 @@ def overlayMusic(audioFile, musicFile, audioMarks):
         #print(marktype)
         #print(markStart)
         #print(markEnd)
+    silent_file_name=Path(audioFile).resolve().stem
+    outputFileName=silent_file_name+"_"+musicFile    
     newcombinedMusic=audioFileRef.overlay(modifiedMusicRef) 
+    newcombinedMusic.export(outputFileName, format="wav")
+    print(outputFileName+' Saved')
     play(newcombinedMusic)
 
 def printHelpMessage():
@@ -227,20 +240,25 @@ def printHelpMessage():
     print(" 3: Combine Audio from existing audio files")
     print(' createAudio.py -x <input xls file> -c -o <outputfile>')
     print(" Example: createAudio.py -x 'abc.xls' -c -o 'myaudiofile.wav'")
+    print()
     print(" 4: Combine Audio from existing audio files with Music Overlay")
     print(' createAudio.py -x <input xls file> -v <overlayfile> -o <outputfile>')
     print(" Example: createAudio.py -x 'abc.xls' -v music.wav -o 'myaudiofile.wav'")
+    print()
+    print(" 5: Combine Audio from existing audio files with Music Overlay. Decrease Music Amplitude in combined Audio file. Example -m 10 reduces volume by 10dB ")
+    print(' createAudio.py -x <input xls file> -v <overlayfile> -o <outputfile> -m <dB reduction>')
+    print(" Example: createAudio.py -x 'abc.xls' -v music.wav -o 'myaudiofile.wav' -m 10")
 
 
 def main(argv):
     inputfile = ''
     outputfile = ''
     overlayfile=''
-    
+    musicscaling=-10
     rownum=0
     operationType='GENERATE_AUDIO'
     try:
-        opts, args = getopt.getopt(argv,"hx:r:o:cv:")
+        opts, args = getopt.getopt(argv,"hx:r:o:cv:m:")
     except getopt.GetoptError:
         printHelpMessage()
         sys.exit(2)
@@ -260,6 +278,8 @@ def main(argv):
         elif opt=='-v':
             operationType='COMBINE_AUDIO_WITH_OVERLAY'
             overlayfile=arg
+        elif(opt=="-m"):
+            musicscaling=arg    
 
 
 

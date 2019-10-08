@@ -2,4 +2,5 @@
 google-cloud-texttospeech==0.5.0
 xlrd==1.2.0
 pydub==0.23.1
+pathlib==1.0.1
 

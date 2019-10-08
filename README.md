@@ -14,6 +14,8 @@ Written Audio Uses Google Text to Speech engine and a configuration file to crea
 
 
 # Usage
+```
+  
 usage: createAudio.py [-h] -x X [-r R] [-o O] [-m M] [-v V]
 
 optional arguments:
@@ -29,6 +31,8 @@ optional arguments:
   
   -v V        Control the volume of the Music File. Negative values will
               reduce volume, positive values will increase it.
+              
+```
 
 # Before Getting Started
 ### Install Python

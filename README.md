@@ -70,7 +70,7 @@ Use the Audio Sequence.xlsx file to generate audio files (it skips files which a
 <code>python3 createAudio.py -x 'Audio Sequence.xlsx' -o 'audiooutput.wav' -m background_music.wav -v -10</code>
 * When the -m argument is present, adding a -v <number> argument will help control the amplitude of the music. 
 * Adding a negative number will reduce volume, while adding a positive number increases it. The number is in dB. 
-* -v 4 increases the volumne by 4 dB. 
+* -v 4 increases the volume by 4 dB. 
 * -v -3 reduces the volume by 3dB
 
  

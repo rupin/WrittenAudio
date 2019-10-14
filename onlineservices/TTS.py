@@ -31,9 +31,9 @@ class TTS():
 		# Build the voice request, select the language code ("en-US") and the ssml
 		# voice gender ("neutral")
 		voice = texttospeech.types.VoiceSelectionParams(
-		    language_code='en-US',
+		    language_code='en-IN',
 		    ssml_gender=texttospeech.enums.SsmlVoiceGender.FEMALE,
-		    name= "en-US-Wavenet-A")
+		    name= "en-IN-Wavenet-A")
 
 		# Select the type of audio file you want returned
 		audio_config = texttospeech.types.AudioConfig(
